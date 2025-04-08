@@ -2,6 +2,6 @@
 design.md
 
 # 排除所有的.idea文件夹
-./.idea/
+.idea/
 
-./conf/config.yaml
+conf/config.yaml
