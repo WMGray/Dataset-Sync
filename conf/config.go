@@ -10,11 +10,17 @@ import (
 
 // 软件信息
 type SoftwareInfo struct {
-	Name    string `mapstructure:"name"`    // 软件名称
-	Version string `mapstructure:"version"` // 软件版本
-
+	*AppConfig `mapstructure:"app"` // 软件信息
 	//*LogConfig   `mapstructure:"log"`   // 日志配置
 	*MySQLConfig `mapstructure:"mysql"` // MySQL配置
+}
+
+type AppConfig struct {
+	AppName        string `mapstructure:"name"`        // 软件名称
+	AppVersion     string `mapstructure:"version"`     // 软件版本
+	AppDescription string `mapstructure:"description"` // 软件描述
+	AppAuthor      string `mapstructure:"author"`      // 软件作者
+	AppStartup     string `mapstructure:"startup"`     // 软件启动方式
 }
 
 type MySQLConfig struct {

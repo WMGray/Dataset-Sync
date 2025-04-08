@@ -1,0 +1,26 @@
+app:
+  name: "Dataset-Sync"
+  version: "1.0.0"
+  author: "WMGray"
+  description: "数据集同步客户端"
+  startup: "2025-04-07"
+
+ui:
+  theme: "light"
+  language: "zh_CN"
+  window:
+    width: 1200
+    height: 800
+    title: "Dataset-Sync - 数据集同步客户端"
+
+log:
+  level: "info"
+
+mysql:
+  host: "127.0.0.1"
+  port: 3306
+  user: "root"
+  password: "xxxx"
+  dbname: "bluebell"
+  max_open_conns: 200
+  max_idle_conns: 20 

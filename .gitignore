@@ -1,0 +1,7 @@
+# 排除常见
+design.md
+
+# 排除所有的.idea文件夹
+./.idea/
+
+./conf/config.yaml

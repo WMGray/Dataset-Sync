@@ -16,6 +16,7 @@ func main() {
 		fmt.Printf("读取配置文件失败, err:%v\n", err)
 		return
 	}
+	fmt.Println("读取配置文件成功")
 	// 启动
 	fmt.Println("启动软件...")
 	// 显示主界面

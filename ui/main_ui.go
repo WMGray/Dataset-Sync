@@ -8,6 +8,7 @@ package ui
 import (
 	"dataset-sync/conf"
 	"fmt"
+	"image/color"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -17,19 +18,47 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+// customTheme implements fyne.Theme
+type customTheme struct {
+	variant fyne.ThemeVariant
+}
+
+func (t *customTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVariant) color.Color {
+	return theme.DefaultTheme().Color(name, t.variant)
+}
+
+func (t *customTheme) Font(style fyne.TextStyle) fyne.Resource {
+	return theme.DefaultTheme().Font(style)
+}
+
+func (t *customTheme) Icon(name fyne.ThemeIconName) fyne.Resource {
+	return theme.DefaultTheme().Icon(name)
+}
+
+func (t *customTheme) Size(name fyne.ThemeSizeName) float32 {
+	return theme.DefaultTheme().Size(name)
+}
+
 // ShowMainUI 显示主界面
 func ShowMainUI() {
 	// 确保配置已加载
-	if conf.Conf.Name == "" || conf.Conf.Version == "" {
+	if conf.Conf.AppConfig.AppName == "" || conf.Conf.AppConfig.AppVersion == "" {
 		fmt.Println("警告: 配置未正确加载，使用默认值")
-		conf.Conf.Name = "Dataset-Sync"
-		conf.Conf.Version = "1.0.0"
+		conf.Conf.AppConfig.AppName = "Dataset-Sync"
+		conf.Conf.AppConfig.AppVersion = "1.0.0"
 	}
 
 	// 创建应用
 	myApp := app.New()
-	myApp.Settings().SetTheme(theme.LightTheme())
-	window := myApp.NewWindow(conf.Conf.Name + " v" + conf.Conf.Version)
+
+	// 创建自定义主题
+	customTheme := &customTheme{
+		variant: theme.VariantLight,
+	}
+
+	myApp.Settings().SetTheme(customTheme)
+
+	window := myApp.NewWindow(conf.Conf.AppConfig.AppName + " v" + conf.Conf.AppConfig.AppVersion)
 	window.Resize(fyne.NewSize(1200, 800))
 
 	// ===== 左侧功能区 =====
@@ -142,11 +171,12 @@ func ShowMainUI() {
 		isDarkMode = !isDarkMode
 		if isDarkMode {
 			themeBtn.SetIcon(theme.ColorPaletteIcon())
-			myApp.Settings().SetTheme(theme.DarkTheme())
+			customTheme.variant = theme.VariantDark
 		} else {
 			themeBtn.SetIcon(theme.ColorPaletteIcon())
-			myApp.Settings().SetTheme(theme.LightTheme())
+			customTheme.variant = theme.VariantLight
 		}
+		myApp.Settings().SetTheme(customTheme)
 	})
 	themeBtn.Resize(fyne.NewSize(24, 24))
 
