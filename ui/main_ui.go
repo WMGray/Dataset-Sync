@@ -1,34 +1,20 @@
-// 3. 右侧： 上半部分 -- 一些查找、搜索操作（一个横条）， 下面部分 -- 部分数据集展示
 package ui
 
-// 主界面UI布局
-// 1. 上方横条 软件信息
-// 2. 左侧： 上半部分 -- 功能模块， 下面部分 -- 账户、设置
-// 3. 右侧： 上半部分 -- 一些查找、搜索操作（一个横条）， 下面部分 -- 部分数据集展示
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
-// NavItem 定义导航项的结构
-type NavItem struct {
-	Label string
-	Icon  fyne.Resource
-	OnTap func()
-}
-
-// NavSection 定义导航分区的结构
-type NavSection struct {
-	Items []NavItem
-}
-
 // MainUI 主界面结构
 type MainUI struct {
-	app    fyne.App
-	window fyne.Window
+	app         fyne.App
+	window      fyne.Window
+	contentArea *fyne.Container // 右侧内容区容器
+	currentPage string          // 当前页面标识
 }
 
 // NewMainUI 创建新的主界面
@@ -46,45 +32,70 @@ func (m *MainUI) init() {
 	m.window = m.app.NewWindow("Dataset Sync")
 	m.window.Resize(fyne.NewSize(1024, 768))
 
-	// 创建左侧导航按钮
-	datasetsBtn := widget.NewButtonWithIcon("数据集", theme.FolderIcon(), nil)
-	uploadBtn := widget.NewButtonWithIcon("上传", theme.UploadIcon(), nil)
+	// 初始化右侧内容区
+	m.contentArea = container.NewMax(widget.NewLabel("欢迎使用 Dataset Sync"))
+	m.currentPage = "home"
 
-	// 创建左侧导航容器
-	navContainer := container.NewVBox(
-		datasetsBtn,
-		uploadBtn,
+	// 创建左侧导航栏
+	navBar := m.createNavBar()
+
+	// 创建主布局
+	mainLayout := container.NewBorder(nil, nil, navBar, nil, m.contentArea)
+	m.window.SetContent(mainLayout)
+}
+
+// createNavBar 创建左侧导航栏
+func (m *MainUI) createNavBar() fyne.CanvasObject {
+	// 功能按钮
+	topFuncBtns := container.NewVBox(
+		widget.NewButtonWithIcon("数据集", theme.StorageIcon(), func() {
+			m.switchPage("dataset")
+		}),
+		widget.NewButtonWithIcon("上传", theme.UploadIcon(), func() {
+			m.switchPage("upload")
+		}),
 	)
 
-	// 创建右侧容器
-	rightSide := container.NewBorder(nil, nil, nil, nil, nil)
+	//	// 下半功能区 -- 账户、设置
+	btmFuncBtns := container.NewVBox(
+		widget.NewButtonWithIcon("账户", theme.AccountIcon(), func() {
+			m.switchPage("account")
+		}),
+		widget.NewButtonWithIcon("设置", theme.SettingsIcon(), func() {
+			m.switchPage("settings")
+		}),
+	)
 
-	// 创建数据集页面
-	datasetPage := NewDatasetPage(m.window)
+	// 导航栏容器
+	return container.NewVBox(
+		topFuncBtns,
+		layout.NewSpacer(),    // 添加弹性空间
+		widget.NewSeparator(), // 动态分割线
+		btmFuncBtns,
+	)
+}
 
-	// 创建上传页面
-	uploadPage := NewUploadPage(m.window)
+// switchPage 切换页面
+func (m *MainUI) switchPage(page string) {
+	var newContent fyne.CanvasObject
 
-	// 设置导航事件
-	datasetsBtn.OnTapped = func() {
-		rightSide.Objects = []fyne.CanvasObject{datasetPage.Container()}
-		rightSide.Refresh()
+	switch page {
+	case "dataset":
+		newContent = CreateDatasetContainer()
+	case "upload":
+		newContent = NewUploadPage(m.window).Container()
+	case "account":
+		newContent = widget.NewLabel("账户功能区")
+	case "settings":
+		newContent = widget.NewLabel("设置功能区")
+	default:
+		newContent = widget.NewLabel("未知页面")
 	}
 
-	uploadBtn.OnTapped = func() {
-		rightSide.Objects = []fyne.CanvasObject{uploadPage.Container()}
-		rightSide.Refresh()
-	}
-
-	// 创建分割容器
-	split := container.NewHSplit(navContainer, rightSide)
-	split.Offset = 0.2
-
-	// 设置窗口内容
-	m.window.SetContent(split)
-
-	// 默认选择数据集页面
-	datasetsBtn.OnTapped()
+	// 更新右侧内容区
+	m.currentPage = page
+	m.contentArea.Objects = []fyne.CanvasObject{newContent}
+	m.contentArea.Refresh()
 }
 
 // Run 运行主界面
