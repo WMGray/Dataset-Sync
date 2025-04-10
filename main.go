@@ -18,7 +18,7 @@ func main() {
 	}
 	fmt.Println("读取配置文件成功")
 	// 启动
-	fmt.Println("启动软件.......")
+	fmt.Println("启动软件....")
 	// 显示主界面
 	ui.NewMainUI().Run()
 }

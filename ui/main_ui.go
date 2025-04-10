@@ -34,6 +34,7 @@ func (m *MainUI) init() {
 
 	// 初始化右侧内容区
 	m.contentArea = container.NewMax(widget.NewLabel("欢迎使用 Dataset Sync"))
+
 	m.currentPage = "home"
 
 	// 创建左侧导航栏
