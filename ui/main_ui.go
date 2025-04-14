@@ -22,9 +22,10 @@ func NewMainUI(window fyne.Window) *MainUI {
 	ui := &MainUI{
 		window: window,
 	}
+	ui.window.Resize(fyne.NewSize(1024, 768))
 
 	// 创建每个功能模块的容器
-	ui.dataset = CreateDatasetContainer()
+	ui.dataset = CreateDatasets()
 	ui.currentContent = ui.dataset
 
 	// 创建左侧导航栏

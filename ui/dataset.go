@@ -1,43 +1,37 @@
 package ui
 
 import (
-	"fmt"
+	"dataset-sync/database"
+	"dataset-sync/models"
 	"sort"
 	"strings"
-	"time"
+
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/theme"
+
+	"fmt"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 )
 
-// DatasetItem 表示数据集项
-type DatasetItem struct {
-	name       string
-	count      int
-	updateTime time.Time
-}
+var cardSize = fyne.NewSize(240, 500)                           // 每张卡片尺寸
+var Datasets []*models.Dataset                                  // 全局数据集列表
+var grid *fyne.Container = container.NewGridWrap(cardSize, nil) // 全局网格容器grid
+var curDatasets []*models.Dataset                               // 当前数据集列表
+var datasetCards = make(map[string]fyne.CanvasObject)           // 存储数据集卡片的映射
 
-var Datasets []DatasetItem                                 // 全局数据集列表
-var grid *fyne.Container = container.NewGridWithColumns(3) // 全局网格容器
-var curDatasets []DatasetItem                              // 当前数据集列表(网格中显示)
+func CreateDatasets() *fyne.Container {
+	gridScroll := container.NewScroll(grid) // 创建滚动容器
+	// 获取数据集列表
+	Datasets = database.GetDatasets()                      // 从SQL中获取Dataset切片
+	curDatasets = append([]*models.Dataset{}, Datasets...) // 初始化当前数据集列表
+	// 初始化卡片
+	initDatasetCards()
 
-func CreateDatasetContainer() *fyne.Container {
-	// 创建数据集列表
-	for i := range 20 {
-		Datasets = append(Datasets, DatasetItem{
-			name:       fmt.Sprintf("数据集 %d", i+1),
-			count:      1000 * (i + 1),
-			updateTime: time.Now().AddDate(0, 0, -i),
-		})
-	}
-	curDatasets = append([]DatasetItem{}, Datasets...) // 初始化当前数据集列表
-
-	// 创建滚动容器
-	gridScroll := container.NewScroll(grid)
-	// 更新网格显示  -- 初始化
-	updateGrid(Datasets)
+	// 初始化网格
+	updateGrid()
 
 	// 创建搜索组件
 	searchEntry := widget.NewEntry()           // 初始化搜索输入框
@@ -92,63 +86,113 @@ func CreateDatasetContainer() *fyne.Container {
 		}
 	}
 
+	// 整体布局：顶部按钮 + 滚动容器
 	return container.NewBorder(topNav, nil, nil, nil, gridScroll)
 }
 
 // searchDatasets 搜索数据集
 func searchDatasets(keyword string) {
 	if keyword == "" {
-		curDatasets = append([]DatasetItem{}, Datasets...) // 重置当前数据集列表
-		updateGrid(Datasets)
+		curDatasets = append([]*models.Dataset{}, Datasets...) // 重置当前数据集列表
+		updateGrid()
 		return
 	}
 	// 搜索过滤
-	filtered := []DatasetItem{}
+	var filtered []*models.Dataset
 	for _, item := range Datasets {
-		if strings.Contains(strings.ToLower(item.name), strings.ToLower(keyword)) {
+		if strings.Contains(strings.ToLower(item.Name), strings.ToLower(keyword)) {
 			filtered = append(filtered, item)
 		}
 	}
 	// 更新当前数据集列表
 	curDatasets = filtered
-	updateGrid(curDatasets)
+	updateGrid()
 }
 
 // sortDatasets 对数据集进行排序
 func sortDatasets(option string) {
-	sorted := make([]DatasetItem, len(curDatasets))
+	sorted := make([]*models.Dataset, len(curDatasets))
 	copy(sorted, curDatasets)
 
 	// 根据选择的排序类型和顺序进行排序
 	switch option {
 	case "名称":
-		sort.Slice(sorted, func(i, j int) bool { return sorted[i].name < sorted[j].name })
+		sort.Slice(sorted, func(i, j int) bool { return sorted[i].Name < sorted[j].Name })
 	case "数量":
-		sort.Slice(sorted, func(i, j int) bool { return sorted[i].count < sorted[j].count })
+		sort.Slice(sorted, func(i, j int) bool { return sorted[i].ImageCount < sorted[j].ImageCount })
 	case "日期":
-		sort.Slice(sorted, func(i, j int) bool { return sorted[i].updateTime.Before(sorted[j].updateTime) })
+		sort.Slice(sorted, func(i, j int) bool { return sorted[i].UpdatedAt.Before(sorted[j].UpdatedAt) })
 	}
 	// 更新全局数据集并刷新网格显示
-	updateGrid(sorted)
+	curDatasets = sorted
+	updateGrid()
 }
 
 // updateGrid 更新网格显示
-func updateGrid(items []DatasetItem) {
-	grid.Objects = nil // 清空网格
-	if len(items) == 0 {
+func updateGrid() {
+	grid.Objects = nil // 清空网格对象
+	if len(curDatasets) == 0 {
 		grid.Add(widget.NewLabel("无该数据集"))
 		return
 	}
-	for _, item := range items {
-		card := widget.NewCard(
-			item.name,
-			"",
-			container.NewVBox(
-				widget.NewLabel(fmt.Sprintf("数据量: %d", item.count)),
-				widget.NewLabel(fmt.Sprintf("更新时间: %s", item.updateTime.Format("2006-01-02"))),
-			),
-		)
-		grid.Add(card)
+
+	var cards []fyne.CanvasObject
+	for _, item := range curDatasets {
+		cards = append(cards, datasetCards[item.Name])
 	}
+	grid.Objects = cards
 	grid.Refresh()
+}
+
+// initDatasetCards 初始化数据集卡片
+func initDatasetCards() {
+	// 初始化数据集卡片
+	for _, ds := range Datasets {
+		card := createDatasetCard(ds)
+		datasetCards[ds.Name] = card
+	}
+}
+
+// createDatasetCard 创建数据集卡片
+func createDatasetCard(ds *models.Dataset) fyne.CanvasObject {
+	// 获取封面图
+	thumbnail := getCover(ds.Cover)
+
+	// 创建一个背景矩形，带有圆角效果，使用主题背景颜色
+	background := canvas.NewRectangle(theme.Color(theme.ColorNameBackground)) // 使用主题背景颜色
+	background.CornerRadius = 20                                              // 设置圆角半径
+	background.SetMinSize(fyne.NewSize(240, 300))                             // 确保背景矩形和卡片大小一致
+
+	// 卡牌内容
+	content := container.NewVBox(
+		// 使用 container.NewPadded 为封面图片添加内边距
+		container.NewPadded(thumbnail),
+		widget.NewLabelWithStyle(ds.Name, fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabel(fmt.Sprintf("图片数量: %d", ds.ImageCount)),
+		widget.NewLabel(fmt.Sprintf("最后更新日期: %s", ds.UpdatedAt.Format("2006-01-02"))),
+		// 状态 0 -- 未更新 1 -- 已更新
+		widget.NewLabel(fmt.Sprintf("状态: %s", func() string {
+			if ds.Status == 0 {
+				return "未更新"
+			}
+			return "已更新"
+		}())),
+	)
+
+	// 使用 container.NewStack 确保背景和内容完全重叠
+	cardContainer := container.NewStack(background, content)
+	cardContainer.Resize(fyne.NewSize(240, 300)) // 设置卡片大小
+
+	return cardContainer
+}
+
+// getCover 获取数据集封面图
+func getCover(filepath string) *canvas.Image {
+	// 加载图片
+	thumbnail := canvas.NewImageFromFile(filepath)
+	thumbnail.FillMode = canvas.ImageFillContain // 或者 ImageFillStretch，确保缩放适应容器
+	// 设置图片最小尺寸
+	thumbnail.SetMinSize(fyne.NewSize(240, 300))
+
+	return thumbnail
 }
