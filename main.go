@@ -4,6 +4,7 @@ import (
 	"dataset-sync/conf"
 	"dataset-sync/ui"
 	"fmt"
+	"fyne.io/fyne/v2/app"
 )
 
 func main() {
@@ -20,5 +21,8 @@ func main() {
 	// 启动
 	fmt.Println("启动软件....")
 	// 显示主界面
-	ui.NewMainUI().Run()
+	a := app.New()
+	w := a.NewWindow("图片数据集管理工具")
+	ui.NewMainUI(w)
+	w.ShowAndRun()
 }

@@ -4,4 +4,5 @@ design.md
 # 排除所有的.idea文件夹
 .idea/
 
+ui/tmp_mainUI.go
 conf/config.yaml

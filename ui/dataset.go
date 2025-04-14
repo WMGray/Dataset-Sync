@@ -23,7 +23,7 @@ var Datasets []DatasetItem                                 // 全局数据集列
 var grid *fyne.Container = container.NewGridWithColumns(3) // 全局网格容器
 var curDatasets []DatasetItem                              // 当前数据集列表(网格中显示)
 
-func CreateDatasetContainer() fyne.CanvasObject {
+func CreateDatasetContainer() *fyne.Container {
 	// 创建数据集列表
 	for i := range 20 {
 		Datasets = append(Datasets, DatasetItem{
