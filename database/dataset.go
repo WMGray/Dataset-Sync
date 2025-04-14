@@ -23,7 +23,7 @@ func GetDatasets() []*models.Dataset {
 			// 随机更新时间 -- 当前时间 + 随机时间
 			UpdatedAt: time.Now().Add(time.Duration(i*20) * time.Hour),
 			Status:    1,
-			Cover:     "C:\\Users\\WMGray\\OneDrive\\Dev\\Workspaces\\Dataset-Sync\\ui\\luna.jpg",
+			Cover:     "ui\\luna.jpg",
 		})
 	}
 	return datasets
