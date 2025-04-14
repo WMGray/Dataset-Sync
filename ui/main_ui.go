@@ -17,6 +17,7 @@ type MainUI struct {
 	export         *fyne.Container
 	settings       *fyne.Container
 	currentContent *fyne.Container
+	mainContent    *fyne.Container
 }
 
 var ui *MainUI // 全局变量，存储主界面实例
@@ -29,16 +30,17 @@ func NewMainUI(window fyne.Window) *MainUI {
 
 	// 创建每个功能模块的容器
 	ui.dataset = CreateDatasets()
+	ui.upload = CreateUpload(window)
 	ui.currentContent = ui.dataset
 
 	// 创建左侧导航栏
 	navBar := ui.createNavBar()
 
 	// 创建主内容区域
-	mainContent := container.NewStack(ui.currentContent)
+	ui.mainContent = container.NewStack(ui.currentContent)
 
 	// 创建水平分割布局，左侧导航栏占 20%
-	split := container.NewHSplit(navBar, mainContent)
+	split := container.NewHSplit(navBar, ui.mainContent)
 	split.Offset = 0.2
 
 	// 设置窗口内容
@@ -78,11 +80,11 @@ func (m *MainUI) createNavBar() fyne.CanvasObject {
 	)
 }
 
-// CreateDatasets 创建数据集管理界面
+// shouwContent 显示指定的内容
 func (ui *MainUI) showContent(content *fyne.Container) {
 	if ui.currentContent != nil {
-		ui.currentContent.Hide()
+		ui.mainContent.Remove(ui.currentContent)
 	}
-	content.Show()
+	ui.mainContent.Add(content)
 	ui.currentContent = content
 }
