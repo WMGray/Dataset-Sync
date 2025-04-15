@@ -53,12 +53,12 @@ func createHistoryList() *fyne.Container {
 	historyList := container.NewVBox()
 	// 表头
 	header := container.NewGridWithColumns(6,
-		widget.NewLabel("数据集名称"),
-		widget.NewLabel("图片名称"),
-		widget.NewLabel("图片路径"),
-		rightedLabel("图片大小"),
-		centeredLabel("上传状态"),
-		widget.NewLabel("上传日期"),
+		widget.NewLabelWithStyle("数据集名称", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle("图片名称", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle("图片路径", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle("图片大小", fyne.TextAlignTrailing, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle("上传状态", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle("上传时间", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}),
 	)
 	historyList.Add(header) // 添加表头
 
@@ -80,12 +80,12 @@ func createHistoryList() *fyne.Container {
 		statusText.Alignment = fyne.TextAlignCenter
 
 		row := container.NewGridWithColumns(6,
-			centeredLabel(record.DatasetName),
-			widget.NewLabel(record.ImageName),
-			widget.NewLabel(record.ImagePath),
-			rightedLabel(record.ImageSize),
+			widget.NewLabelWithStyle(record.DatasetName, fyne.TextAlignLeading, fyne.TextStyle{Bold: false}),
+			widget.NewLabelWithStyle(record.ImageName, fyne.TextAlignLeading, fyne.TextStyle{Bold: false}),
+			widget.NewLabelWithStyle(record.ImagePath, fyne.TextAlignLeading, fyne.TextStyle{Bold: false}),
+			widget.NewLabelWithStyle(record.ImageSize, fyne.TextAlignTrailing, fyne.TextStyle{Bold: false}),
 			statusText,
-			widget.NewLabel(record.UploadTime),
+			widget.NewLabelWithStyle(record.UploadTime, fyne.TextAlignLeading, fyne.TextStyle{Bold: false}),
 		)
 		historyList.Add(row)
 	}
