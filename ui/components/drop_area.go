@@ -62,11 +62,9 @@ func (d *DropZone) ResetHighlight() {
 }
 
 // CreateDropArea 创建拖放区域
-func CreateDropArea(window fyne.Window, text string) *DropZone {
-	dropText := widget.NewLabel(text)
-	dropText.Alignment = fyne.TextAlignCenter
-
-	dropZone := NewDropZone(window, container.NewCenter(dropText), func(uris []fyne.URI) {
+func CreateDropArea(window fyne.Window, content *fyne.Container) *DropZone {
+	// 创建拖放区域
+	dropZone := NewDropZone(window, container.NewCenter(content), func(uris []fyne.URI) {
 		fmt.Println("Dropped files:")
 		for _, uri := range uris {
 			fmt.Printf("Dropped file: %s\n", uri.Path())
