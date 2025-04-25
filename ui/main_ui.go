@@ -31,6 +31,7 @@ func NewMainUI(window fyne.Window) *MainUI {
 	// 创建每个功能模块的容器
 	ui.dataset = CreateDatasets()
 	ui.upload = CreateUpload(window)
+	ui.settings = createSettingsView()
 	ui.currentContent = ui.dataset
 
 	// 创建左侧导航栏

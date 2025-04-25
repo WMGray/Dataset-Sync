@@ -4,7 +4,6 @@ import (
 	"dataset-sync/conf"
 	"dataset-sync/ui"
 	"fmt"
-
 	"fyne.io/fyne/v2/app"
 )
 
