@@ -17,9 +17,9 @@ type SettingItem struct {
 }
 
 // NewSettingItem 创建新的设置项
-func NewSettingItem(title string, control fyne.CanvasObject) *SettingItem {
+func NewSettingItem(title *widget.Label, control fyne.CanvasObject) *SettingItem {
 	item := &SettingItem{
-		title:   widget.NewLabel(title),
+		title:   title,
 		control: control,
 	}
 	item.ExtendBaseWidget(item)

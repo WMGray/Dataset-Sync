@@ -6,11 +6,13 @@ require (
 	fyne.io/fyne/v2 v2.5.5
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/spf13/viper v1.20.1
+	github.com/sqweek/dialog v0.0.0-20240226140203-065105509627
 )
 
 require (
 	fyne.io/systray v1.11.0 // indirect
 	github.com/BurntSushi/toml v1.4.0 // indirect
+	github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fredbi/uri v1.1.0 // indirect
 	github.com/fyne-io/gl-js v0.0.0-20220119005834-d2da28d9ccfe // indirect

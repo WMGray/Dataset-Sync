@@ -21,7 +21,7 @@ func main() {
 	// 启动
 	fmt.Println("启动软件..。。..")
 	// 显示主界面
-	a := app.New()
+	a := app.NewWithID("com.github.wmgr-demo")
 	w := a.NewWindow("图片数据集管理工具")
 	ui.NewMainUI(w)
 	w.ShowAndRun()
