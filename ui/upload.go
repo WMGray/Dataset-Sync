@@ -1,13 +1,15 @@
 package ui
 
 import (
+	"errors"
 	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/dialog"
+	fyneDialog "fyne.io/fyne/v2/dialog" // 重命名以区分
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/sqweek/dialog"
 	"image/color"
 
 	"dataset-sync/database"
@@ -22,7 +24,7 @@ func CreateUpload(w fyne.Window) *fyne.Container {
 	content := createUploadPrompt(w)
 	dropArea := components.CreateDropArea(w, container.NewCenter(content))
 	dropArea.Resize(fyne.NewSize(500, 200))
-	dropArea.Move(fyne.NewPos(0, 30)) // 往下偏移一下，避免被 label 挡住
+	//dropArea.Move(fyne.NewPos(0, 30)) // 往下偏移一下，避免被 label 挡住
 
 	// 上方区域  -- 搜索框和拖放区域
 	topSection := container.NewBorder(
@@ -49,11 +51,11 @@ func createSearchEntry(window fyne.Window) *fyne.Container {
 	searchButton := widget.NewButtonWithIcon("搜索", theme.SearchIcon(), func() {
 		keyword := searchEntry.Text
 		if keyword == "" {
-			dialog.ShowInformation("提示", "请输入图片链接", window)
+			fyneDialog.ShowInformation("提示", "请输入图片链接", window)
 			return
 		}
 		fmt.Printf("Captured URL: %s\n", keyword)
-		dialog.ShowInformation("URL 已捕获", fmt.Sprintf("已捕获 URL: %s", keyword), window)
+		fyneDialog.ShowInformation("URL 已捕获", fmt.Sprintf("已捕获 URL: %s", keyword), window)
 	})
 	searchButton.Importance = widget.HighImportance
 
@@ -75,20 +77,23 @@ func createUploadPrompt(window fyne.Window) *fyne.Container {
 
 	uploadLink := widget.NewHyperlink("上传文件", nil)
 	uploadLink.OnTapped = func() {
-		dialog.ShowFileOpen(func(file fyne.URIReadCloser, err error) {
+		go func() {
+			// 使用system dialog库打开文件选择对话框
+			filePath, err := dialog.File().Title("选择文件上传").Load()
 			if err != nil {
-				dialog.ShowError(err, window)
+				// 处理错误，包括用户取消
+				if errors.Is(err, dialog.ErrCancelled) {
+					return // 用户取消，不做任何处理
+				}
+				// 在主线程中显示错误
+				fyneDialog.ShowError(err, window)
 				return
 			}
-			if file == nil {
-				return
-			}
-			defer file.Close()
 
-			filePath := file.URI().Path()
+			// 文件选择成功，在主线程中更新UI
 			fmt.Printf("Captured file: %s\n", filePath)
-			dialog.ShowInformation("上传成功", fmt.Sprintf("已捕获文件: %s", filePath), window)
-		}, window)
+			fyneDialog.ShowInformation("上传成功", fmt.Sprintf("已捕获文件: %s", filePath), ui.window)
+		}()
 	}
 
 	promptContainer := container.NewVBox(
