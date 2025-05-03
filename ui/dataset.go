@@ -3,6 +3,7 @@ package ui
 import (
 	"dataset-sync/database"
 	"dataset-sync/models"
+	"fyne.io/fyne/v2/dialog"
 	"sort"
 	"strings"
 
@@ -32,6 +33,37 @@ func CreateDatasets() *fyne.Container {
 
 	// 初始化网格
 	updateGrid()
+
+	// 创建新增数据集按钮
+	addDatasetButton := widget.NewButtonWithIcon("", theme.ContentAddIcon(), func() {
+		// TODO: 弹出新增数据集窗口吧
+		// 弹出一个提示框用于捕获数据集信息
+		// 这里可以使用一个简单的对话框来捕获数据集名称 并 输出
+		nameEntry := widget.NewEntry()
+		nameEntry.SetPlaceHolder("请输入要新创建的数据集名称")
+		nameEntry.Resize(fyne.NewSize(400, 100))
+		// 构造一个 FormItem 数组（这里只有一个字段）
+		formItems := []*widget.FormItem{
+			widget.NewFormItem("名称", nameEntry),
+		} // 弹出 Form 对话框：标题“新增数据集”，确认按钮“添加”，取消按钮“取消”
+		formDialog := dialog.NewForm("新增数据集", "添加", "取消", formItems, func(confirmed bool) {
+			if !confirmed {
+				return
+			}
+			name := nameEntry.Text
+			if name == "" {
+				dialog.ShowError(fmt.Errorf("名称不能为空"), ui.window)
+				return
+			}
+			dialog.ShowCustom("数据集添加成功！", "确定",
+				widget.NewLabel("新数据集名称: "+name), ui.window)
+			fmt.Println("新数据集：", name)
+		}, ui.window)
+
+		// 设置对话框的大小
+		formDialog.Resize(fyne.NewSize(400, 200))
+		formDialog.Show()
+	})
 
 	// 创建搜索组件
 	searchEntry := widget.NewEntry()           // 初始化搜索输入框
@@ -70,7 +102,8 @@ func CreateDatasets() *fyne.Container {
 
 	// 顶部导航栏布局（3列）
 	topNav := container.NewBorder(
-		nil, nil, nil,
+		nil, nil,
+		addDatasetButton,
 		container.NewGridWithColumns(3,
 			searchEntryWrapper, // 用 wrapper 控制大小
 			searchButton,
@@ -158,11 +191,6 @@ func createDatasetCard(ds *models.Dataset) fyne.CanvasObject {
 	// 获取封面图
 	thumbnail := getCover(ds.Cover)
 
-	// 创建一个背景矩形，带有圆角效果，使用主题背景颜色
-	background := canvas.NewRectangle(theme.Color(theme.ColorNameBackground)) // 使用主题背景颜色
-	background.CornerRadius = 20                                              // 设置圆角半径
-	background.SetMinSize(fyne.NewSize(240, 300))                             // 确保背景矩形和卡片大小一致
-
 	// 卡牌内容
 	content := container.NewVBox(
 		// 使用 container.NewPadded 为封面图片添加内边距
@@ -180,7 +208,7 @@ func createDatasetCard(ds *models.Dataset) fyne.CanvasObject {
 	)
 
 	// 使用 container.NewStack 确保背景和内容完全重叠
-	cardContainer := container.NewStack(background, content)
+	cardContainer := container.NewStack(content)
 	cardContainer.Resize(fyne.NewSize(240, 300)) // 设置卡片大小
 
 	return cardContainer
